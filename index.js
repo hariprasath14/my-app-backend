@@ -18,7 +18,8 @@ const db = mysql.createPool({
     host: "localhost",
     user: "root",
     password: "password",
-    database: "moviereview"
+    database: "moviereview",
+    socketPath:"MySQL"
 })
 
 app.get("/", (req, res) => {
