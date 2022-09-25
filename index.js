@@ -5,7 +5,7 @@ const cors = require("cors")
 
 
 const app = express()
-app.listen(3001, () => {
+app.listen(process.env.Port || 3001, () => {
     console.log("hello 3001");
 })
 
@@ -21,6 +21,9 @@ const db = mysql.createPool({
     database: "moviereview"
 })
 
+app.get("/", (req, res) => {
+    res.send("I'm working!")
+})
 
 app.post("/save_movie", (req, res) => {
     const name = req.body.movie_name
