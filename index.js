@@ -19,7 +19,6 @@ const db = mysql.createPool({
     user: "root",
     password: "password",
     database: "moviereview",
-    socketPath:"MySQL"
 })
 
 app.get("/", (req, res) => {
