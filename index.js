@@ -22,6 +22,7 @@ const db = mysql.createPool({
 })
 
 app.get("/", (req, res) => {
+    console.log("323",db);
     res.send("I'm working!")
 })
 
@@ -38,8 +39,9 @@ app.post("/save_movie", (req, res) => {
 
 app.get("/get_movie", (req, res) => {
     const sqlSelect = "SELECT * FROM movies"
+    console.log("1245",db);
     db.query(sqlSelect, (err, result) => {
-        console.log(err);
+        console.log("err, result",err, result);
         res.send(result)
     })
 })
