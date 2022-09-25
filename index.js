@@ -5,7 +5,7 @@ const cors = require("cors")
 
 
 const app = express()
-app.listen(process.env.Port || 3001, () => {
+app.listen(process.env.PORT || 3001, () => {
     console.log("hello 3001");
 })
 
