@@ -2,6 +2,7 @@ const express = require("express")
 const mysql = require("mysql")
 const bodyParser = require("body-parser")
 const cors = require("cors")
+const axios = require("axios")
 
 
 const app = express()
@@ -42,7 +43,9 @@ app.get("/get_movie", (req, res) => {
     console.log("1245",db);
     db.query(sqlSelect, (err, result) => {
         console.log("err, result",err, result);
-        res.send(result)
+        setTimeout(() => {
+            res.send(result)
+        }, 3000);
     })
 })
 
