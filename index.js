@@ -26,14 +26,18 @@ const tournamentDB = mysql.createPool({
     database: "tournament",
 })
 
-app.listen(process.env.PORT || 3001, () => {
+let serverPort= process.env.PORT || 3001
+app.listen(serverPort, () => {
     console.log("hello 3001");
     const sqlSelect = "SELECT * FROM mini_miltia"
     tournamentDB.query(sqlSelect, (err, result) => {
-        console.log("err, result", result);
+        console.log("err, result",serverPort, result);
     })
 })
 
+app.use("/", (req, res) => {
+    res.send("new working!")
+})
 app.get("/", (req, res) => {
     console.log("323",db);
     res.send("I'm working!")
