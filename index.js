@@ -35,13 +35,19 @@ app.listen(serverPort, () => {
     })
 })
 
-app.use("/", (req, res) => {
-    res.send("new working!")
-})
+// app.use("/", (req, res) => {
+//     res.send("new working!")
+// })
 app.get("/", (req, res) => {
     console.log("323",db);
     res.send("I'm working!")
 })
+// var http = require('http');
+// http.createServer(function (req, res) {
+//   res.writeHead(200, {'Content-Type': 'text/plain'});
+//   res.end('Hello Wor6ld\n');
+// }).listen(1337, "127.0.0.14");
+// console.log('Server running at http://127.0.0.14:1337/');
 
 app.post("/save_movie", (req, res) => {
     const name = req.body.movie_name
@@ -60,7 +66,9 @@ app.get("/get_movie", (req, res) => {
     db.query(sqlSelect, (err, result) => {
         console.log("err, result",err, result);
         setTimeout(() => {
+            // res.writeHead(204, {'Content-Type': 'application/json'});
             res.send(result)
+            res.end('Hello Wor6ld\n');
         }, 3000);
     })
 })
