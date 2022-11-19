@@ -27,7 +27,11 @@ const tournamentDB = mysql.createPool({
 })
 
 app.listen(process.env.PORT || 3001, () => {
-    console.log("hello 3001",tournamentDB);
+    console.log("hello 3001");
+    const sqlSelect = "SELECT * FROM mini_miltia"
+    tournamentDB.query(sqlSelect, (err, result) => {
+        console.log("err, result", result);
+    })
 })
 
 app.get("/", (req, res) => {
