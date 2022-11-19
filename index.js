@@ -22,6 +22,13 @@ const db = mysql.createPool({
     database: "moviereview",
 })
 
+const tournamentDB = mysql.createPool({
+    host: "localhost",
+    user: "root",
+    password: "password",
+    database: "tournament",
+})
+
 app.get("/", (req, res) => {
     console.log("323",db);
     res.send("I'm working!")
@@ -66,5 +73,18 @@ app.put("/update_movie", (req, res) => {
     const sqlUpdate = "UPDATE movies SET review = ? WHERE id = ?"
     db.query(sqlUpdate, [review, id], (err, result) => {
         res.send(err)
+    })
+})
+
+
+
+app.get("/get_mm__players", (req, res) => {
+    const sqlSelect = "SELECT * FROM mini_miltia"
+    console.log("1245",tournamentDB);
+    tournamentDB.query(sqlSelect, (err, result) => {
+        console.log("err, result",err, result);
+        setTimeout(() => {
+            res.send(result)
+        }, 3000);
     })
 })
