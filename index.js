@@ -6,9 +6,6 @@ const axios = require("axios")
 
 
 const app = express()
-app.listen(process.env.PORT || 3001, () => {
-    console.log("hello 3001");
-})
 
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -27,6 +24,10 @@ const tournamentDB = mysql.createPool({
     user: "root",
     password: "password",
     database: "tournament",
+})
+
+app.listen(process.env.PORT || 3001, () => {
+    console.log("hello 3001",tournamentDB);
 })
 
 app.get("/", (req, res) => {
