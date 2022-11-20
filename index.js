@@ -93,12 +93,22 @@ app.put("/update_movie", (req, res) => {
 })
 
 
-app.get("/get_mm__players", (req, res) => {
-    const sqlSelect = "SELECT * FROM minimiltia"
-    awsDb.query(sqlSelect, (err, result) => {
-        console.log("err, result",err, result);
-        setTimeout(() => {
-            res.send(result)
-        }, 3000);
-    })
-})
+// app.get("/get_mm__players", (req, res) => {
+//     const sqlSelect = "SELECT * FROM minimiltia"
+//     awsDb.query(sqlSelect, (err, result) => {
+//         console.log("err, result",err, result);
+//         setTimeout(() => {
+//             res.send(result)
+//         }, 3000);
+//     })
+// })
+
+// app.post("/rgtrMM", (req, res) => {
+//     const { address, city, country, district, email, name, phn_num, pincode, state } = req.body
+//     const sqlInsert = "INSERT INTO minimiltia (address, city, country, district, email, name, phn_num, pincode, state) VALUES (?,?,?,?,?,?,?,?,?)"
+//     console.log("save 10", req.body);
+//     awsDb.query(sqlInsert, [address, city, country, district, email, name, phn_num, pincode, state], ((err, result) => {
+//         console.log(err, result);
+//         res.send({...result,status:"updated"})
+//     }))
+// })
