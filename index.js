@@ -3,6 +3,7 @@ const mysql = require("mysql")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const axios = require("axios")
+const { awsDb } = require("./connect-db")
 
 
 const app = express()
@@ -29,10 +30,10 @@ const tournamentDB = mysql.createPool({
 let serverPort= process.env.PORT || 3001
 app.listen(serverPort, () => {
     console.log("hello 3001");
-    const sqlSelect = "SELECT * FROM mini_miltia"
-    tournamentDB.query(sqlSelect, (err, result) => {
-        console.log("err, result",serverPort, result);
-    })
+    // const sqlSelect = "SELECT * FROM mini_miltia"
+    // tournamentDB.query(sqlSelect, (err, result) => {
+    //     console.log("err, result",serverPort, result);
+    // })
 })
 
 // app.use("/", (req, res) => {
@@ -94,11 +95,9 @@ app.put("/update_movie", (req, res) => {
 })
 
 
-
 app.get("/get_mm__players", (req, res) => {
-    const sqlSelect = "SELECT * FROM mini_miltia"
-    console.log("1245",tournamentDB);
-    tournamentDB.query(sqlSelect, (err, result) => {
+    const sqlSelect = "SELECT * FROM minimiltia"
+    awsDb.query(sqlSelect, (err, result) => {
         console.log("err, result",err, result);
         setTimeout(() => {
             res.send(result)
