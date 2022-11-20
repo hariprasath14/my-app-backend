@@ -67,9 +67,7 @@ app.get("/get_movie", (req, res) => {
     db.query(sqlSelect, (err, result) => {
         console.log("err, result",err, result);
         setTimeout(() => {
-            // res.writeHead(204, {'Content-Type': 'application/json'});
             res.send(result)
-            res.end('Hello Wor6ld\n');
         }, 3000);
     })
 })
