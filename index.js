@@ -134,12 +134,22 @@ app.get("/get_mm__players", async (req, res) => {
     // })
 })
 
-app.post("/rgtrMM", (req, res) => {
+app.post("/rgtrMM", async (req, res) => {
     const { address, city, country, district, email, name, phn_num, pincode, state } = req.body
-    const sqlInsert = "INSERT INTO minimiltia (address, city, country, district, email, name, phn_num, pincode, state) VALUES (?,?,?,?,?,?,?,?,?)"
-    console.log("save 10", req.body);
-    tournamentDB.query(sqlInsert, [address, city, country, district, email, name, phn_num, pincode, state], ((err, result) => {
-        console.log(err, result);
-        res.send({ ...result, status: "updated" })
-    }))
+
+    let { minimiltia } = await connectLocaldb()
+    let result = await minimiltia.create({ address, city, country, district, email, name, phn_num, pincode, state });
+    console.log("res", result);
+    if (result) {
+        res.send({ status: "updated" })
+    } else {
+        res.send("err")
+    }
+
+    // const sqlInsert = "INSERT INTO minimiltia (address, city, country, district, email, name, phn_num, pincode, state) VALUES (?,?,?,?,?,?,?,?,?)"
+    // console.log("save 10", req.body);
+    // tournamentDB.query(sqlInsert, [address, city, country, district, email, name, phn_num, pincode, state], ((err, result) => {
+    //     console.log(err, result);
+    //     res.send({ ...result, status: "updated" })
+    // }))
 })
