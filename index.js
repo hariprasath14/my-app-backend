@@ -4,6 +4,7 @@ const bodyParser = require("body-parser")
 const cors = require("cors")
 const axios = require("axios")
 const { awsDb } = require("./connect-db")
+const connectLocaldb = require("./db/connectLocalDB")
 
 
 const app = express()
@@ -27,7 +28,7 @@ const tournamentDB = mysql.createPool({
     database: "tournament",
 })
 
-let serverPort= process.env.PORT || 3001
+let serverPort = process.env.PORT || 3001
 app.listen(serverPort, () => {
     console.log("hello 3001");
     // const sqlSelect = "SELECT * FROM mini_miltia"
@@ -40,7 +41,7 @@ app.listen(serverPort, () => {
 //     res.send("new working!")
 // })
 app.get("/", (req, res) => {
-    console.log("323",db);
+    console.log("323", db);
     res.send("I'm working!")
 })
 // var http = require('http');
@@ -63,9 +64,9 @@ app.post("/save_movie", (req, res) => {
 
 app.get("/get_movie", (req, res) => {
     const sqlSelect = "SELECT * FROM movies"
-    console.log("1245",db);
+    console.log("1245", db);
     db.query(sqlSelect, (err, result) => {
-        console.log("err, result",err, result);
+        console.log("err, result", err, result);
         setTimeout(() => {
             res.send(result)
         }, 3000);
@@ -75,7 +76,7 @@ app.get("/get_movie", (req, res) => {
 app.delete("/delete_movie/:id", (req, res) => {
     const id = req.params.id
     const sqlDelete = "DELETE FROM movies WHERE id = ?"
-    console.log("delete",id);
+    console.log("delete", id);
     db.query(sqlDelete, id, (err, result) => {
         res.send(result)
     })
@@ -84,7 +85,7 @@ app.delete("/delete_movie/:id", (req, res) => {
 app.put("/update_movie", (req, res) => {
     const id = req.body.id
     const review = req.body.review
-    console.log("update",review);
+    console.log("update", review);
 
     const sqlUpdate = "UPDATE movies SET review = ? WHERE id = ?"
     db.query(sqlUpdate, [review, id], (err, result) => {
@@ -112,3 +113,33 @@ app.put("/update_movie", (req, res) => {
 //         res.send({...result,status:"updated"})
 //     }))
 // })
+
+
+//code by sequelize
+app.get("/get_mm__players", async (req, res) => {
+    console.log("hii");
+    let { minimiltia } = await connectLocaldb()
+    let result = await minimiltia.findAll();
+    if (result) {
+        res.send(result)
+    } else {
+        res.send("err")
+    }
+    // const sqlSelect = "SELECT * FROM minimiltia"
+    // tournamentDB.query(sqlSelect, (err, result) => {
+    //     console.log("err, result", err, result);
+    //     setTimeout(() => {
+    //         res.send(result)
+    //     }, 3000);
+    // })
+})
+
+app.post("/rgtrMM", (req, res) => {
+    const { address, city, country, district, email, name, phn_num, pincode, state } = req.body
+    const sqlInsert = "INSERT INTO minimiltia (address, city, country, district, email, name, phn_num, pincode, state) VALUES (?,?,?,?,?,?,?,?,?)"
+    console.log("save 10", req.body);
+    tournamentDB.query(sqlInsert, [address, city, country, district, email, name, phn_num, pincode, state], ((err, result) => {
+        console.log(err, result);
+        res.send({ ...result, status: "updated" })
+    }))
+})
