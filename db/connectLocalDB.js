@@ -1,4 +1,5 @@
 const connectMinimiltia = require("./dbShcema/dbTournament")
+const connectPlayoffMatchs = require("./dbShcema/dbPlayoffMatchs")
 const Sequelize = require("sequelize");
 
 let sequelizeTmnt = new Sequelize(
@@ -11,9 +12,10 @@ let sequelizeTmnt = new Sequelize(
     });
 
 const minimiltia = connectMinimiltia(sequelizeTmnt, Sequelize);
+const playoffMatchs = connectPlayoffMatchs(sequelizeTmnt, Sequelize);
 
 
-const exportDb = { minimiltia }
+const exportDb = { minimiltia, playoffMatchs }
 
 module.exports = async () => {
     return exportDb

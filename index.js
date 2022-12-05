@@ -153,3 +153,17 @@ app.post("/rgtrMM", async (req, res) => {
     //     res.send({ ...result, status: "updated" })
     // }))
 })
+app.post("/createPlayOff", async (req, res) => {
+
+    const { matchId, teamA, teamB, teamAPoints, teamBPoints, matchDt, matchTs, winner } = req.body
+
+    let { playoffMatchs } = await connectLocaldb()
+    let result = await playoffMatchs.create({ matchId, teamA, teamB, teamAPoints, teamBPoints, matchDt, matchTs, winner });
+    console.log("res2", result);
+    if (result) {
+        res.send({ status: "updated" })
+    } else {
+        res.send("err")
+    }
+
+})
