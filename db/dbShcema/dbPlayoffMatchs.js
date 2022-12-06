@@ -18,11 +18,9 @@ module.exports = (sequelize, DataTypes) => {
             },
             teamAPoints: {
                 type: DataTypes.STRING(45),
-                allowNull: false,
             },
             teamBPoints: {
                 type: DataTypes.STRING(45),
-                allowNull: false,
             },
             matchDt: {
                 type: DataTypes.STRING(45),
@@ -33,7 +31,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             winner: {
                 type: DataTypes.STRING(45),
-                allowNull: false,
             },
 
         },

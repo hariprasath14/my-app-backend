@@ -5,6 +5,7 @@ const cors = require("cors")
 const axios = require("axios")
 const { awsDb } = require("./connect-db")
 const connectLocaldb = require("./db/connectLocalDB")
+const { createSchedule } = require("./common/createSchedule")
 
 
 const app = express()
@@ -153,17 +154,28 @@ app.post("/rgtrMM", async (req, res) => {
     //     res.send({ ...result, status: "updated" })
     // }))
 })
+
 app.post("/createPlayOff", async (req, res) => {
 
-    const { matchId, teamA, teamB, teamAPoints, teamBPoints, matchDt, matchTs, winner } = req.body
+    let { minimiltia } = await connectLocaldb()
+    let regitrTeams = await minimiltia.findAll();
+    let sendData = createSchedule(regitrTeams)
+    console.log("suffleArr", sendData);
+
+    let saveData = sendData.map((data, i) => {
+        return { ...data, teamA: data.teamA.id, teamB: data.teamB.id, }
+    })
+
 
     let { playoffMatchs } = await connectLocaldb()
-    let result = await playoffMatchs.create({ matchId, teamA, teamB, teamAPoints, teamBPoints, matchDt, matchTs, winner });
+    let result = await playoffMatchs.bulkCreate(saveData).catch((err) => {
+        console.log(err);
+    })
     console.log("res2", result);
     if (result) {
-        res.send({ status: "updated" })
+        res.send({ status: "updated", response: sendData, saveData: saveData })
     } else {
-        res.send("err")
+        res.send([])
     }
 
 })
