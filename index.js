@@ -160,20 +160,40 @@ app.post("/createPlayOff", async (req, res) => {
     let { minimiltia } = await connectLocaldb()
     let regitrTeams = await minimiltia.findAll();
     let sendData = createSchedule(regitrTeams)
-    console.log("suffleArr", sendData);
 
     let saveData = sendData.map((data, i) => {
         return { ...data, teamA: data.teamA.id, teamB: data.teamB.id, }
     })
 
-
     let { playoffMatchs } = await connectLocaldb()
     let result = await playoffMatchs.bulkCreate(saveData).catch((err) => {
-        console.log(err);
+        // console.log(err);
     })
-    console.log("res2", result);
     if (result) {
         res.send({ status: "updated", response: sendData, saveData: saveData })
+    } else {
+        res.send([])
+    }
+
+})
+
+app.post("/getPlayOff", async (req, res) => {
+    let { minimiltia, playoffMatchs } = await connectLocaldb()
+    let regitrTeams = await playoffMatchs.findAll({
+        include: [
+            {
+                model: minimiltia,
+                as: "TeamA",
+            },
+            {
+                model: minimiltia,
+                as: "TeamB",
+            }
+        ],
+    });
+    let result = regitrTeams
+    if (result) {
+        res.send({ status: "updated", response: result, saveData: "saveData" })
     } else {
         res.send([])
     }
