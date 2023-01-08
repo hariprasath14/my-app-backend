@@ -2,6 +2,8 @@ const connectMinimiltia = require("./dbShcema/dbTournament")
 const connectPlayoffMatchs = require("./dbShcema/dbPlayoffMatchs")
 const Sequelize = require("sequelize");
 
+// const { awsDb } = require("./connectServerDB") // for server connection
+
 let sequelizeTmnt = new Sequelize(
     {
         "username": "root",
