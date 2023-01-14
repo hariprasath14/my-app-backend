@@ -50,13 +50,20 @@ app.post("/rgtrMM", async (req, res) => {
 })
 
 app.post("/createPlayOff", async (req, res) => {
+    console.log("reerre", req.body);
+    if (!req.body.tmtName) {
+        res.send("no valid input data")
+    }
+    let { minimiltia, tournamentList } = await connectLocaldb()
+    let tmtName = req.body.tmtName
+    let tmt = await tournamentList.create({ tmtName });
 
-    let { minimiltia } = await connectLocaldb()
+
     let regitrTeams = await minimiltia.findAll();
     let sendData = createSchedule(regitrTeams)
 
     let saveData = sendData.map((data, i) => {
-        return { ...data, teamA: data.teamA.id, teamB: data.teamB.id, }
+        return { ...data, teamA: data.teamA.id, teamB: data.teamB.id, tmtID: tmt.tmtID }
     })
 
     let { playoffMatchs } = await connectLocaldb()
@@ -72,8 +79,16 @@ app.post("/createPlayOff", async (req, res) => {
 })
 
 app.post("/getPlayOff", async (req, res) => {
+    console.log("red43red4re3derre", req.body);
+    if (!req.body.tmtID === null || !req.body.tmtID === undefined) {
+        res.send("no valid input data")
+    }
+    let tmtID = req.body.tmtID
     let { minimiltia, playoffMatchs } = await connectLocaldb()
     let regitrTeams = await playoffMatchs.findAll({
+        where: {
+            tmtID: tmtID
+        },
         include: [
             {
                 model: minimiltia,
@@ -86,6 +101,17 @@ app.post("/getPlayOff", async (req, res) => {
         ],
     });
     let result = regitrTeams
+    if (result) {
+        res.send({ status: "updated", response: result, saveData: "saveData" })
+    } else {
+        res.send([])
+    }
+
+})
+app.post("/getTmtList", async (req, res) => {
+    let { tournamentList } = await connectLocaldb()
+    let tmtList = await tournamentList.findAll();
+    let result = tmtList
     if (result) {
         res.send({ status: "updated", response: result, saveData: "saveData" })
     } else {

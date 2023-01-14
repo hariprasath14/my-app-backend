@@ -1,5 +1,6 @@
-const connectMinimiltia = require("./dbShcema/dbTournament")
+const connectMinimiltia = require("./dbShcema/dbPlayers")
 const connectPlayoffMatchs = require("./dbShcema/dbPlayoffMatchs")
+const connectTournamentList = require("./dbShcema/dbtournamentList")
 const Sequelize = require("sequelize");
 
 // const { awsDb } = require("./connectServerDB") // for server connection
@@ -15,12 +16,14 @@ let sequelizeTmnt = new Sequelize(
 
 const minimiltia = connectMinimiltia(sequelizeTmnt, Sequelize);
 const playoffMatchs = connectPlayoffMatchs(sequelizeTmnt, Sequelize);
+const tournamentList = connectTournamentList(sequelizeTmnt, Sequelize);
 
 
 playoffMatchs.belongsTo(minimiltia, { foreignKey: "teamA", as: "TeamA" })
 playoffMatchs.belongsTo(minimiltia, { foreignKey: "teamB", as: "TeamB" })
+playoffMatchs.belongsTo(tournamentList, { foreignKey: "tmtID" })
 
-const exportDb = { minimiltia, playoffMatchs }
+const exportDb = { minimiltia, playoffMatchs, tournamentList }
 const dbConnection = {};
 
 module.exports = async () => {
@@ -33,8 +36,8 @@ module.exports = async () => {
         await sequelizeTmnt.authenticate();
         dbConnection.isConnected = true;
         console.log('Connection has been established successfully.');
-      } catch (error) {
-        console.error('Unable to connect to the database:', error);
-      }
+    } catch (error) {
+        console.error('Unable to connect to the database:');
+    }
     return exportDb;
 };

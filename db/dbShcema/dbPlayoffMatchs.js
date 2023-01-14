@@ -8,6 +8,10 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
+            tmtID: {
+                type: DataTypes.INTEGER(11),
+                allowNull: false,
+            },
             teamA: {
                 type: DataTypes.STRING(45),
                 allowNull: false,
