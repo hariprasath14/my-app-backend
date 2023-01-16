@@ -4,6 +4,9 @@ const cors = require("cors")
 const axios = require("axios")
 const connectLocaldb = require("./db/connectLocalDB")
 const { createSchedule } = require("./common/createSchedule")
+const { checkAlpha, checkPassWord, checkEmail, commonResponse } = require("./common/common")
+const { invalidInputMessage } = require("./common/message")
+const { hashPassword, comparePassword } = require("./common/secureData")
 
 
 const app = express()
@@ -119,3 +122,96 @@ app.post("/getTmtList", async (req, res) => {
     }
 
 })
+
+//Auth
+
+
+app.post("/login", async (req, res) => {
+    if (!req.body.email || !req.body.password) {
+        let response = commonResponse("a", 0, invalidInputMessage, "")
+        res.send(response)
+    }
+    req.body.email = await checkEmail(req.body.email)
+    req.body.password = await checkPassWord(req.body.password)
+
+    if (req.body.email && req.body.password) {
+        let { usersRegister } = await connectLocaldb()
+
+        let userData = await usersRegister.findOne({
+            attributes: ['user_pass'],
+            required: false,
+            raw: true,
+            where: { user_email: req.body.email },
+        })
+        if (userData) {
+            let allowLogin = await comparePassword(req.body.password, userData?.user_pass)
+
+            if (allowLogin) {
+                let response = commonResponse(1, "Logged in successfully", "")
+                res.send(response)
+            } else {
+                let response = commonResponse("a", 0, invalidInputMessage, "")
+                res.send(response)
+            }
+        } else {
+            let response = commonResponse("a", 0, invalidInputMessage, "")
+            res.send(response)
+        }
+
+    } else {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+})
+
+app.post("/register", async (req, res) => {
+    if (!req.body.email || !req.body.password) {
+        let response = commonResponse("a", 0, invalidInputMessage, "")
+        res.send(response)
+    }
+
+    req.body.name = await checkAlpha(req.body.name)
+    req.body.email = await checkEmail(req.body.email)
+    req.body.password = await checkPassWord(req.body.password)
+
+    if (req.body.name && req.body.email && req.body.password) {
+        let { usersRegister } = await connectLocaldb()
+
+        let userData = await usersRegister.findOne({
+            attributes: ['user_id'],
+            required: false,
+            raw: true,
+            where: { user_email: req.body.email },
+        })
+        if (!userData) {
+            req.body.password = await hashPassword(req.body.password)
+            userData = {
+                user_fname: req.body.name,
+                user_email: req.body.email,
+                user_pass: req.body.password,
+            }
+            let user = await usersRegister.create(userData);
+
+            if (user) {
+                let response = commonResponse(1, "Created Successfully", "")
+                res.send(response)
+            } else {
+
+                // handel js error to api while function
+                let response = commonResponse(0, "unexpected Error", "")
+                res.send(response)
+            }
+        } else {
+            let response = commonResponse(0, "Email already exist", "")
+            res.send(response)
+        }
+    } else {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+
+
+})
+
+
+// handel js error to api while function
