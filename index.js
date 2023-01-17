@@ -128,7 +128,7 @@ app.post("/getTmtList", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     if (!req.body.email || !req.body.password) {
-        let response = commonResponse("a", 0, invalidInputMessage, "")
+        let response = commonResponse(0, invalidInputMessage, "")
         res.send(response)
     }
     req.body.email = await checkEmail(req.body.email)
@@ -150,11 +150,11 @@ app.post("/login", async (req, res) => {
                 let response = commonResponse(1, "Logged in successfully", "")
                 res.send(response)
             } else {
-                let response = commonResponse("a", 0, invalidInputMessage, "")
+                let response = commonResponse(0, invalidInputMessage, "")
                 res.send(response)
             }
         } else {
-            let response = commonResponse("a", 0, invalidInputMessage, "")
+            let response = commonResponse(0, invalidInputMessage, "")
             res.send(response)
         }
 
@@ -166,7 +166,7 @@ app.post("/login", async (req, res) => {
 
 app.post("/register", async (req, res) => {
     if (!req.body.email || !req.body.password) {
-        let response = commonResponse("a", 0, invalidInputMessage, "")
+        let response = commonResponse(0, invalidInputMessage, "")
         res.send(response)
     }
 
