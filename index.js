@@ -138,7 +138,7 @@ app.post("/login", async (req, res) => {
         let { usersRegister } = await connectLocaldb()
 
         let userData = await usersRegister.findOne({
-            attributes: ['user_pass'],
+            attributes: ['user_pass',['user_id','loggedinUser']],
             required: false,
             raw: true,
             where: { user_email: req.body.email },
@@ -147,7 +147,8 @@ app.post("/login", async (req, res) => {
             let allowLogin = await comparePassword(req.body.password, userData?.user_pass)
 
             if (allowLogin) {
-                let response = commonResponse(1, "Logged in successfully", "")
+                const { ["user_pass"]: _, ...user_data } = userData;
+                let response = commonResponse(1, "Logged in successfully", user_data)
                 res.send(response)
             } else {
                 let response = commonResponse(0, invalidInputMessage, "")
