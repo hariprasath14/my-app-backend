@@ -138,7 +138,7 @@ app.post("/login", async (req, res) => {
         let { usersRegister } = await connectLocaldb()
 
         let userData = await usersRegister.findOne({
-            attributes: ['user_pass',['user_id','loggedinUser']],
+            attributes: ['user_pass', ['user_id', 'loggedinUser']],
             required: false,
             raw: true,
             where: { user_email: req.body.email },
@@ -166,7 +166,7 @@ app.post("/login", async (req, res) => {
 })
 
 app.post("/register", async (req, res) => {
-    if (!req.body.email || !req.body.password) {
+    if (!req.body.name || !req.body.email || !req.body.password) {
         let response = commonResponse(0, invalidInputMessage, "")
         res.send(response)
     }
