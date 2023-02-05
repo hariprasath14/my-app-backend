@@ -6,7 +6,8 @@ const connectLocaldb = require("./db/connectLocalDB")
 const { createSchedule } = require("./common/createSchedule")
 const { checkAlpha, checkPassWord, checkEmail, commonResponse } = require("./common/common")
 const { invalidInputMessage } = require("./common/message")
-const { hashPassword, comparePassword } = require("./common/secureData")
+const { hashPassword, comparePassword, jwtSecretKey, decodeJwtToken } = require("./common/secureData")
+const jwt = require("jsonwebtoken")
 
 
 const app = express()
@@ -29,13 +30,23 @@ app.get("/", (req, res) => {
 
 //code by sequelize
 app.get("/get_mm__players", async (req, res) => {
-    console.log("hii");
-    let { minimiltia } = await connectLocaldb()
-    let result = await minimiltia.findAll();
-    if (result) {
-        res.send(result)
+    let token = req.headers["authkey"]
+    if (!token) {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+    let user = decodeJwtToken(token, res)
+    if (user) {
+        let { minimiltia } = await connectLocaldb()
+        let result = await minimiltia.findAll();
+        if (result) {
+            res.send(result)
+        } else {
+            res.send("err")
+        }
     } else {
-        res.send("err")
+        let response = commonResponse(0, "Unauthrized access", "")
+        res.send(response)
     }
 })
 
@@ -44,7 +55,6 @@ app.post("/rgtrMM", async (req, res) => {
 
     let { minimiltia } = await connectLocaldb()
     let result = await minimiltia.create({ address, city, country, district, email, name, phn_num, pincode, state });
-    console.log("res", result);
     if (result) {
         res.send({ status: "updated" })
     } else {
@@ -53,7 +63,6 @@ app.post("/rgtrMM", async (req, res) => {
 })
 
 app.post("/createPlayOff", async (req, res) => {
-    console.log("reerre", req.body);
     if (!req.body.tmtName) {
         res.send("no valid input data")
     }
@@ -82,7 +91,6 @@ app.post("/createPlayOff", async (req, res) => {
 })
 
 app.post("/getPlayOff", async (req, res) => {
-    console.log("red43red4re3derre", req.body);
     if (!req.body.tmtID === null || !req.body.tmtID === undefined) {
         res.send("no valid input data")
     }
@@ -138,7 +146,7 @@ app.post("/login", async (req, res) => {
         let { usersRegister } = await connectLocaldb()
 
         let userData = await usersRegister.findOne({
-            attributes: ['user_pass', ['user_id', 'loggedinUser']],
+            attributes: ['user_pass', "user_id", ["user_fname", "name"]],
             required: false,
             raw: true,
             where: { user_email: req.body.email },
@@ -147,6 +155,14 @@ app.post("/login", async (req, res) => {
             let allowLogin = await comparePassword(req.body.password, userData?.user_pass)
 
             if (allowLogin) {
+                const token = jwt.sign(
+                    { user_id: userData.user_id, name: userData.name },
+                    jwtSecretKey || "",
+                    {
+                        expiresIn: "1m",
+                    }
+                );
+                userData.token = token
                 const { ["user_pass"]: _, ...user_data } = userData;
                 let response = commonResponse(1, "Logged in successfully", user_data)
                 res.send(response)
