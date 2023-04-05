@@ -6,8 +6,7 @@ const connectLocaldb = require("./db/connectLocalDB")
 const { createSchedule } = require("./common/createSchedule")
 const { checkAlpha, checkPassWord, checkEmail, commonResponse } = require("./common/common")
 const { invalidInputMessage } = require("./common/message")
-const { hashPassword, comparePassword, jwtSecretKey, decodeJwtToken } = require("./common/secureData")
-const jwt = require("jsonwebtoken")
+const { hashPassword, comparePassword, decodeJwtToken, encodeJwtToken } = require("./common/secureData")
 
 
 const app = express()
@@ -46,7 +45,7 @@ app.get("/get_mm__players", async (req, res) => {
         }
     } else {
         let response = commonResponse(0, "Unauthrized access", "")
-        res.send(response)
+        res.status(401).send(response);
     }
 })
 
@@ -155,16 +154,9 @@ app.post("/login", async (req, res) => {
             let allowLogin = await comparePassword(req.body.password, userData?.user_pass)
 
             if (allowLogin) {
-                const token = jwt.sign(
-                    { user_id: userData.user_id, name: userData.name },
-                    jwtSecretKey || "",
-                    {
-                        expiresIn: "1m",
-                    }
-                );
-                userData.token = token
-                const { ["user_pass"]: _, ...user_data } = userData;
-                let response = commonResponse(1, "Logged in successfully", user_data)
+                let tokenData = { user_id: userData.user_id, name: userData.name }
+                const token = encodeJwtToken(tokenData);
+                let response = commonResponse(1, "Logged in successfully", { token: token })
                 res.send(response)
             } else {
                 let response = commonResponse(0, invalidInputMessage, "")
@@ -232,3 +224,7 @@ app.post("/register", async (req, res) => {
 
 
 // handel js error to api while function
+
+// done dynamic form validation components
+
+// node express 

@@ -18,9 +18,17 @@ module.exports = {
             const decoded = jwt.verify(token, secretKey);
             user = decoded;
         } catch (err) {
-            res.status(401).send("Unauthrized access");
             return null;
         }
         return user;
     },
+    encodeJwtToken: (obj) => {
+        return jwt.sign(
+            { ...obj },
+            secretKey,
+            {
+                expiresIn: "1m",
+            }
+        )
+    }
 }
