@@ -1,9 +1,12 @@
 const express = require("express")
-const mysql = require("mysql")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const axios = require("axios")
-const { awsDb } = require("./connect-db")
+const connectLocaldb = require("./db/connectLocalDB")
+const { createSchedule } = require("./common/createSchedule")
+const { checkAlpha, checkPassWord, checkEmail, commonResponse } = require("./common/common")
+const { invalidInputMessage } = require("./common/message")
+const { hashPassword, comparePassword, decodeJwtToken, encodeJwtToken } = require("./common/secureData")
 
 
 const app = express()
@@ -13,94 +16,215 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.json())
 
 
-const db = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "moviereview",
-})
+let serverPort = process.env.PORT || 3001
 
-const tournamentDB = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "tournament",
-})
-
-let serverPort= process.env.PORT || 3001
 app.listen(serverPort, () => {
     console.log("hello 3001");
-    // const sqlSelect = "SELECT * FROM mini_miltia"
-    // tournamentDB.query(sqlSelect, (err, result) => {
-    //     console.log("err, result",serverPort, result);
-    // })
 })
 
-// app.use("/", (req, res) => {
-//     res.send("new working!")
-// })
 app.get("/", (req, res) => {
-    console.log("323",db);
-    res.send("I'm working!")
-})
-// var http = require('http');
-// http.createServer(function (req, res) {
-//   res.writeHead(200, {'Content-Type': 'text/plain'});
-//   res.end('Hello Wor6ld\n');
-// }).listen(1337, "127.0.0.14");
-// console.log('Server running at http://127.0.0.14:1337/');
-
-app.post("/save_movie", (req, res) => {
-    const name = req.body.movie_name
-    const review = req.body.movie_review
-    const rating = req.body.movie_rating
-    const sqlInsert = "INSERT INTO movies (name,review,rating) VALUES (?,?,?)"
-    db.query(sqlInsert, [name, review, rating], ((err, result) => {
-        console.log(err, result);
-        res.send(result)
-    }))
+    res.send("I'm working test!")
 })
 
-app.get("/get_movie", (req, res) => {
-    const sqlSelect = "SELECT * FROM movies"
-    console.log("1245",db);
-    db.query(sqlSelect, (err, result) => {
-        console.log("err, result",err, result);
-        setTimeout(() => {
-            // res.writeHead(204, {'Content-Type': 'application/json'});
+
+//code by sequelize
+app.get("/get_mm__players", async (req, res) => {
+    let token = req.headers["authkey"]
+    if (!token) {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+    let user = decodeJwtToken(token, res)
+    if (user) {
+        let { minimiltia } = await connectLocaldb()
+        let result = await minimiltia.findAll();
+        if (result) {
             res.send(result)
-            res.end('Hello Wor6ld\n');
-        }, 3000);
-    })
+        } else {
+            res.send("err")
+        }
+    } else {
+        let response = commonResponse(0, "Unauthrized access", "")
+        res.status(401).send(response);
+    }
 })
 
-app.delete("/delete_movie/:id", (req, res) => {
-    const id = req.params.id
-    const sqlDelete = "DELETE FROM movies WHERE id = ?"
-    console.log("delete",id);
-    db.query(sqlDelete, id, (err, result) => {
-        res.send(result)
-    })
+app.post("/rgtrMM", async (req, res) => {
+    const { address, city, country, district, email, name, phn_num, pincode, state } = req.body
+
+    let { minimiltia } = await connectLocaldb()
+    let result = await minimiltia.create({ address, city, country, district, email, name, phn_num, pincode, state });
+    if (result) {
+        res.send({ status: "updated" })
+    } else {
+        res.send("err")
+    }
 })
 
-app.put("/update_movie", (req, res) => {
-    const id = req.body.id
-    const review = req.body.review
-    console.log("update",review);
+app.post("/createPlayOff", async (req, res) => {
+    if (!req.body.tmtName) {
+        res.send("no valid input data")
+    }
+    let { minimiltia, tournamentList } = await connectLocaldb()
+    let tmtName = req.body.tmtName
+    let tmt = await tournamentList.create({ tmtName });
 
-    const sqlUpdate = "UPDATE movies SET review = ? WHERE id = ?"
-    db.query(sqlUpdate, [review, id], (err, result) => {
-        res.send(err)
+
+    let regitrTeams = await minimiltia.findAll();
+    let sendData = createSchedule(regitrTeams)
+
+    let saveData = sendData.map((data, i) => {
+        return { ...data, teamA: data.teamA.id, teamB: data.teamB.id, tmtID: tmt.tmtID }
     })
+
+    let { playoffMatchs } = await connectLocaldb()
+    let result = await playoffMatchs.bulkCreate(saveData).catch((err) => {
+        // console.log(err);
+    })
+    if (result) {
+        res.send({ status: "updated", response: sendData, saveData: saveData })
+    } else {
+        res.send([])
+    }
+
+})
+
+app.post("/getPlayOff", async (req, res) => {
+    if (!req.body.tmtID === null || !req.body.tmtID === undefined) {
+        res.send("no valid input data")
+    }
+    let tmtID = req.body.tmtID
+    let { minimiltia, playoffMatchs } = await connectLocaldb()
+    let regitrTeams = await playoffMatchs.findAll({
+        where: {
+            tmtID: tmtID
+        },
+        include: [
+            {
+                model: minimiltia,
+                as: "TeamA",
+            },
+            {
+                model: minimiltia,
+                as: "TeamB",
+            }
+        ],
+    });
+    let result = regitrTeams
+    if (result) {
+        res.send({ status: "updated", response: result, saveData: "saveData" })
+    } else {
+        res.send([])
+    }
+
+})
+app.post("/getTmtList", async (req, res) => {
+    let { tournamentList } = await connectLocaldb()
+    let tmtList = await tournamentList.findAll();
+    let result = tmtList
+    if (result) {
+        res.send({ status: "updated", response: result, saveData: "saveData" })
+    } else {
+        res.send([])
+    }
+
+})
+
+//Auth
+
+
+app.post("/login", async (req, res) => {
+    if (!req.body.email || !req.body.password) {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+    req.body.email = await checkEmail(req.body.email)
+    req.body.password = await checkPassWord(req.body.password)
+
+    if (req.body.email && req.body.password) {
+        let { usersRegister } = await connectLocaldb()
+
+        let userData = await usersRegister.findOne({
+            attributes: ['user_pass', "user_id", ["user_fname", "name"]],
+            required: false,
+            raw: true,
+            where: { user_email: req.body.email },
+        })
+        if (userData) {
+            let allowLogin = await comparePassword(req.body.password, userData?.user_pass)
+
+            if (allowLogin) {
+                let tokenData = { user_id: userData.user_id, name: userData.name }
+                const token = encodeJwtToken(tokenData);
+                let response = commonResponse(1, "Logged in successfully", { token: token })
+                res.send(response)
+            } else {
+                let response = commonResponse(0, invalidInputMessage, "")
+                res.send(response)
+            }
+        } else {
+            let response = commonResponse(0, invalidInputMessage, "")
+            res.send(response)
+        }
+
+    } else {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+})
+
+app.post("/register", async (req, res) => {
+    if (!req.body.name || !req.body.email || !req.body.password) {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+
+    req.body.name = await checkAlpha(req.body.name)
+    req.body.email = await checkEmail(req.body.email)
+    req.body.password = await checkPassWord(req.body.password)
+
+    if (req.body.name && req.body.email && req.body.password) {
+        let { usersRegister } = await connectLocaldb()
+
+        let userData = await usersRegister.findOne({
+            attributes: ['user_id'],
+            required: false,
+            raw: true,
+            where: { user_email: req.body.email },
+        })
+        if (!userData) {
+            req.body.password = await hashPassword(req.body.password)
+            userData = {
+                user_fname: req.body.name,
+                user_email: req.body.email,
+                user_pass: req.body.password,
+            }
+            let user = await usersRegister.create(userData);
+
+            if (user) {
+                let response = commonResponse(1, "Created Successfully", "")
+                res.send(response)
+            } else {
+
+                // handel js error to api while function
+                let response = commonResponse(0, "unexpected Error", "")
+                res.send(response)
+            }
+        } else {
+            let response = commonResponse(0, "Email already exist", "")
+            res.send(response)
+        }
+    } else {
+        let response = commonResponse(0, invalidInputMessage, "")
+        res.send(response)
+    }
+
+
 })
 
 
-app.get("/get_mm__players", (req, res) => {
-    const sqlSelect = "SELECT * FROM minimiltia"
-    awsDb.query(sqlSelect, (err, result) => {
-        console.log("err, result",err, result);
-        setTimeout(() => {
-            res.send(result)
-        }, 3000);
-    })
-})
+// handel js error to api while function
+
+// done dynamic form validation components
+
+// node express 
