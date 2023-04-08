@@ -23,7 +23,7 @@ app.listen(serverPort, () => {
 })
 
 app.get("/", (req, res) => {
-    res.send("I'm working test!")
+    res.send("I'm working renderer and railway")
 })
 
 

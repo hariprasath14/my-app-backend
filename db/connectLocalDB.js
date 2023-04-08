@@ -6,11 +6,11 @@ const Sequelize = require("sequelize");
 
 // const { awsDb } = require("./connectServerDB") // for server connection
 
-let sequelizeTmnt = new Sequelize(
+let sequelizeTmnt = 1 === 1 ? new Sequelize("mysql://root:KUXryHtC6sYZ8XaLfRBD@containers-us-west-82.railway.app:6384/railway") : new Sequelize(
     {
         "username": "root",
         "password": "password",
-        "database": "tournament",
+        "database": "my-tmnt-db",
         "host": "localhost",
         "dialect": "mysql"
     });
